@@ -66,19 +66,18 @@ def ticket_handler(message):
         if interval_name not in ['недели', 'дни'] or not 1 <= interval <= 6:
             raise ValueError("Некорректный интервал или количество интервалов")
 
-        # plt.clf()  # Очищаем предыдущий график
-
-        # Вызываем функцию get_tick для получения графика
+       # Вызываем функцию get_tick для получения графика
         img = get_tick(tick=tick, interval_name=interval_name, interval=interval)
+        img.seek(0)
 
         # Отправляем график пользователю
         bot.send_photo(message.chat.id, img)
-        # bot.send_document(message.chat.id, document=img, caption=f"График {tick}")
 
-    except ValueError as ve:
+        logging.info(f"Sent chart for '{tick}' to user {message.chat.id}")
+
+    except (ValueError, IndexError) as ve:
         logging.error(f"Invalid input: {ve}")
         bot.reply_to(message, f"Некорректные данные: {ve}")
-
     except Exception as e:
         logging.error(f"Error processing '/ticket' command: {e}")
         bot.reply_to(message, f"Произошла ошибка: {e}")
@@ -98,19 +97,17 @@ def handle_messages(message):
                 bot.send_message(chat_id,
                                  text="Введите название акции, интервал (дни/недели), и количество интервалов:")
                 states[chat_id] = "Ожидайте"
-            # elif message.text == "Помощь":
-            #     bot.send_message(chat_id, text="Чем я могу помочь?")
-            # else:
-            #     bot.send_message(chat_id, text="Я могу отвечать только на нажатие кнопок.")
+
         elif states[chat_id] == "Ожидайте":
             try:
                 stock_info = message.text.split()
                 tick, interval_name, interval = stock_info[0], stock_info[1], int(stock_info[2])
-                plt.clf()
+
                 get_tick(tick, interval_name, interval)
                 img = BytesIO()
                 plt.savefig(img, format='png')
                 img.seek(0)
+                
                 bot.send_photo(chat_id, img)
                 states[chat_id] = "start"  # Возвращаем пользователя в начальное состояние
             except Exception as e:
@@ -119,7 +116,7 @@ def handle_messages(message):
     else:
         bot.send_message(chat_id, text="Для начала работы введите /start.")
 
-    logging.info(f"Handler end current state for user {chat_id}: {states.get(chat_id)}")
+    logging.info(f"End current state for user {chat_id}: {states.get(chat_id)}")
 
 
 # бесконечное выполнение кода

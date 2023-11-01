@@ -57,6 +57,14 @@ def get_tick(
             f'http://iss.moex.com/iss/engines/stock/markets/shares/securities/{tick.upper()}/candles.json?from={date_start_frame}&till={date_end}&interval={time_interval}')
         j_dict = j.json()
 
+        if 'candles' in j_dict and 'columns' in j_dict['candles']:
+            data = pd.DataFrame(
+                [{k: r[i] for i, k in enumerate(j_dict['candles']['columns'])} for r in j_dict['candles']['data']])
+        else:
+            error_message = f"Неожиданный API запрос для {tick.upper()}"
+            logging.error(error_message)
+            raise ValueError(error_message)
+
         logging.info("Данные успешно получены!")
 
         data = pd.DataFrame(
@@ -93,6 +101,7 @@ def get_tick(
 
         img = BytesIO()
         plt.savefig(img, format='png')
+        plt.close()
         img.seek(0)
 
         return img
@@ -100,6 +109,6 @@ def get_tick(
 
     # Обработка ошибки запроса и возврат ошибки
     except requests.exceptions.RequestException as e:
-        error_message = f"Request failed for tick {tick.upper()}, interval_name {interval_name}, interval {interval}: {e}"
+        error_message = f"Ошибка обработки запроса для тикера {tick.upper()}, наименованию интервала {interval_name} и интервала {interval}: {e}"
         logging.error(error_message)
         return None, f"Error: {error_message}"
