@@ -17,7 +17,7 @@ logging.basicConfig(filename='logs/bot_func.log', level=logging.INFO,
 def get_tick(
         tick: str,
         interval_name: str = 'недели',
-        interval: int = 60,
+        interval: int = 4,
         time_interval: int = 24,
         rolling_avg_num: Optional[int] = 3,
         rolling_avg_int: tuple = (7, 14, 21),
