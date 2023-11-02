@@ -5,7 +5,7 @@ from telebot import types
 import logging
 
 from __init__ import secrets  # Токен
-from main import get_tick
+from main_test import get_tick
 
 import matplotlib.pyplot as plt
 from io import BytesIO
