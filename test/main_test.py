@@ -5,10 +5,10 @@ from io import BytesIO
 import pandas as pd
 import requests
 from datetime import datetime, timedelta
-import time
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.dates as mdates
+
 
 # logging.basicConfig(filename='logs/bot_func.log', level=logging.INFO,
 #                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -19,7 +19,6 @@ def get_tick(
         interval_name: str = 'недели',
         interval: int = 4,
         time_interval: int = 24,
-        colors: list = ['#33CC00', '#CC33CC', '#FF6600'],
 ):
     try:
         logging.info(
@@ -85,12 +84,12 @@ def get_tick(
                  fontstyle='oblique', fontvariant='small-caps')
         plt.legend(loc='lower left', ncols=2)
 
-        # img = BytesIO()
-        # plt.savefig(img, format='png', bbox_inches='tight')
-        # plt.close()
-        # img.seek(0)
+        img = BytesIO()
+        plt.savefig(img, format='png', bbox_inches='tight')
+        plt.close()
+        img.seek(0)
 
-        return plt.show()
+        return img
 
     # Обработка ошибки запроса и возврат ошибки
     except requests.exceptions.RequestException as e:

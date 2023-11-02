@@ -1,4 +1,5 @@
 import base64
+from concurrent.futures import ThreadPoolExecutor
 
 import telebot
 from telebot import types
@@ -10,8 +11,8 @@ from main_test import get_tick
 import matplotlib.pyplot as plt
 from io import BytesIO
 
-logging.basicConfig(filename='logs/bot_handler.log', level=logging.INFO,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+# logging.basicConfig(filename='logs/bot_handler.log', level=logging.INFO,
+#                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 token = secrets.get('BOT_API_TOKEN')
 bot = telebot.TeleBot(token)
@@ -111,8 +112,8 @@ def handle_get_tick(message):
               '-' * 5 +
               '\n')
 
-        get_tick(tick=tick, interval_name=interval_name, interval=interval)
-        # img = get_tick(tick=tick, interval_name=interval_name, interval=interval)
+        # get_tick(tick=tick, interval_name=interval_name, interval=interval)
+        img = get_tick(tick=tick, interval_name=interval_name, interval=interval)
 
         # принт после запуска фунции получения данных с биржи + построение графика
         print(f'03_04 Функция get_tick отработала с параметрами {tick, interval, interval_name}' +
@@ -121,18 +122,18 @@ def handle_get_tick(message):
               '\n')
 
         # сохранение изображения в байтовый поток
-        img = BytesIO()
-        plt.savefig(img, format='png', bbox_inches='tight')
+        # img = BytesIO()
+        # plt.savefig(img, format='png', bbox_inches='tight')
         img.seek(0)
-        img_png = img.getvalue()
+        # img_png = img.getvalue()
         img.close()
 
-        graphic = base64.b64encode(img_png)
-        graphic = graphic.decode('utf-8')
+        # graphic = base64.b64encode(img_png)
+        # graphic = graphic.decode('utf-8')
 
         # отправка результата функции пользователю
-        # bot.send_photo(chat_id, img)
-        bot.send_photo(chat_id, graphic)
+        bot.send_photo(chat_id, img)
+        # bot.send_photo(chat_id, graphic)
 
         # принт окончания выполнения обработчиика сообщения пользователя
         print(f'03 Функция get_tick завершила работу с параметрами {tick, interval, interval_name}' +
