@@ -42,10 +42,12 @@ def get_tick(
             date_start = timedelta(weeks=interval)  # From what
         elif interval_name == 'дни' or interval_name == 'дней':
             date_start = timedelta(days=interval)
-        elif interval_name == 'часа' or interval_name == 'часов':
-            date_start = timedelta(hours=interval)
-        elif interval_name == 'минуты' or interval_name == 'минут':
-            date_start = timedelta(minutes=interval)
+
+            # Удалить
+        # elif interval_name == 'часа' or interval_name == 'часов':
+        #     date_start = timedelta(hours=interval)
+        # elif interval_name == 'минуты' or interval_name == 'минут':
+        #     date_start = timedelta(minutes=interval)
 
         date_end = datetime.now()  # Date now
         date_start_frame = date_end - date_start  # Starting interval data
@@ -100,7 +102,7 @@ def get_tick(
         plt.legend(loc='lower left', ncols=2)
 
         img = BytesIO()
-        plt.savefig(img, format='png')
+        plt.savefig(img, format='png', bbox_inches='tight')
         plt.close()
         img.seek(0)
 
