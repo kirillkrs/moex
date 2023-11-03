@@ -11,8 +11,6 @@ from main_test import get_tick
 import matplotlib.pyplot as plt
 from io import BytesIO
 
-# logging.basicConfig(filename='logs/bot_handler.log', level=logging.INFO,
-#                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 token = secrets.get('BOT_API_TOKEN')
 bot = telebot.TeleBot(token)
