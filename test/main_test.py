@@ -10,10 +10,6 @@ import seaborn as sns
 import matplotlib.dates as mdates
 
 
-# logging.basicConfig(filename='logs/bot_func.log', level=logging.INFO,
-#                     format='%(asctime)s - %(levelname)s - %(message)s')
-
-
 def get_tick(
         tick: str,
         interval_name: str = 'недели',
@@ -21,8 +17,6 @@ def get_tick(
         time_interval: int = 24,
 ):
     try:
-        logging.info(
-            f"Начало запроса функции: {tick.upper()}, interval_name: {interval_name.lower()}, interval: {interval}")
 
         """
         :param tick: Наименование акций
@@ -53,10 +47,10 @@ def get_tick(
                 [{k: r[i] for i, k in enumerate(j_dict['candles']['columns'])} for r in j_dict['candles']['data']])
         else:
             error_message = f"Неожиданный API запрос для {tick.upper()}"
-            logging.error(error_message)
+
             raise ValueError(error_message)
 
-        logging.info("Данные успешно получены!")
+
 
         data = pd.DataFrame(
             [{k: r[i] for i, k in enumerate(j_dict['candles']['columns'])} for r in j_dict['candles']['data']])
@@ -94,5 +88,4 @@ def get_tick(
     # Обработка ошибки запроса и возврат ошибки
     except requests.exceptions.RequestException as e:
         error_message = f"Ошибка обработки запроса для тикера {tick.upper()}, наименованию интервала {interval_name} и интервала {interval}: {e}"
-        logging.error(error_message)
         return None, f"Error: {error_message}"
