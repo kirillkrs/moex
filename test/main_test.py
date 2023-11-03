@@ -42,15 +42,13 @@ def get_tick(
             f'http://iss.moex.com/iss/engines/stock/markets/shares/securities/{tick.upper()}/candles.json?from={date_start_frame}&till={date_end}&interval={time_interval}')
         j_dict = j.json()
 
-        if 'candles' in j_dict and 'columns' in j_dict['candles']:
-            data = pd.DataFrame(
-                [{k: r[i] for i, k in enumerate(j_dict['candles']['columns'])} for r in j_dict['candles']['data']])
-        else:
-            error_message = f"Неожиданный API запрос для {tick.upper()}"
-
-            raise ValueError(error_message)
-
-
+        # if 'candles' in j_dict and 'columns' in j_dict['candles']:
+        #     data = pd.DataFrame(
+        #         [{k: r[i] for i, k in enumerate(j_dict['candles']['columns'])} for r in j_dict['candles']['data']])
+        # else:
+        #     error_message = f"Неожиданный API запрос для {tick.upper()}"
+        #
+        #     raise ValueError(error_message)
 
         data = pd.DataFrame(
             [{k: r[i] for i, k in enumerate(j_dict['candles']['columns'])} for r in j_dict['candles']['data']])
@@ -80,7 +78,7 @@ def get_tick(
 
         img = BytesIO()
         plt.savefig(img, format='png', bbox_inches='tight')
-        plt.close()
+        # plt.close()
         img.seek(0)
 
         return img
