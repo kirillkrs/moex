@@ -3,8 +3,8 @@ import logging
 import telebot
 from telebot import types
 
-from secrets import secrets  # Токен
-from main import get_tick
+from __init__ import secrets
+from main_test import get_tick
 
 token = secrets.get('BOT_API_TOKEN')
 bot = telebot.TeleBot(token)
@@ -12,7 +12,7 @@ bot = telebot.TeleBot(token)
 logging.basicConfig(level=logging.INFO)  # Настройка уровня логирования
 
 
-# Функция для отправки сообщения с клавиатурой
+# Функция для отправки сообщения с клавиатуры
 def send_keyboard(message, text, keyboard):
     logging.info(f'Отправка сообщения: {text}')
     bot.send_message(message.chat.id, text, reply_markup=keyboard)
@@ -57,15 +57,31 @@ def handle_get_tick(message):
         logging.info('Обработка сообщения пользователя')
         chat_id = message.chat.id
         text_info = message.text.split()
-        tick, interval, interval_name = str(text_info[0]).upper(), int(text_info[1]), str(text_info[2]).lower()
 
-        logging.info(f'Запрос пользователя: тикер={tick}, интервал={interval}, дни/недели={interval_name}')
-        img = get_tick(tick=tick, interval_name=interval_name, interval=interval)
+        if len(text_info) > 1:
+            tick, interval, interval_name = str(text_info[0]).upper(), int(text_info[1]), str(text_info[2]).lower()
 
-        logging.info('Отправка сообщения пошльзователю')
-        img.seek(0)
-        bot.send_photo(chat_id, img)
-        img.close()
+            logging.info(f'Запрос пользователя: тикер={tick}, интервал={interval}, дни/недели={interval_name}')
+            img = get_tick(tick=tick, interval_name=interval_name, interval=interval)
+
+            logging.info('Отправка сообщения пошльзователю')
+            img.seek(0)
+            bot.send_photo(chat_id, img)
+            img.close()
+
+        elif len(text_info) == 1:
+            tick = text_info[0].upper()
+
+            logging.info(f'Запрос пользователя: тикер={tick}, интервал и дни/недели по-умолчанию')
+            img = get_tick(tick=tick)
+
+            logging.info('Отправка сообщения пошльзователю')
+            img.seek(0)
+            bot.send_photo(chat_id, img)
+            img.close()
+
+        else:
+            bot.send_message(chat_id, text='Неверный формат ввода. Убедитесь, что нет ошибки.')
 
         logging.info(f'Завершение запроса пользователя: тикер={tick}, интервал={interval}, дни/недели={interval_name}')
         logging.info('Запрос успешно обработан')
