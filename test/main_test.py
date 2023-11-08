@@ -1,5 +1,3 @@
-from typing import Optional
-import logging
 from io import BytesIO
 
 import pandas as pd
@@ -13,7 +11,7 @@ import matplotlib.dates as mdates
 def get_tick(
         tick: str,
         interval_name: str = 'недели',
-        interval: int = 4,
+        interval: int = 6,
 ):
     try:
 
@@ -21,8 +19,6 @@ def get_tick(
         :param tick: Наименование акций
         :param interval_name: Желаемый интервал (Дни / недели)
         :param interval: Количество дней / недель
-        :param time_interval: временной интервал внутри сессии (60 минут / 24 часа)
-        :param colors: Цета отображения графиков скользящего среднего
         :return: Возвращает графики
         """
 
@@ -43,7 +39,7 @@ def get_tick(
         date_format = mdates.DateFormatter('%d.%m.%Y')
 
         j = requests.get(
-            f'http://iss.moex.com/iss/engines/stock/markets/shares/securities/{tick}/candles.json?from={date_start_frame}&till={date_end}&interval={time_interval}')
+            f'http://iss.moex.com/iss/engines/stock/markets/shares/securities/{tick}/candles.json?from={date_start_frame}&till={date_end}&interval=60')
         j_dict = j.json()
 
         data = pd.DataFrame(
@@ -74,9 +70,9 @@ def get_tick(
         plt.ylabel(ylabel='', fontweight='bold')
         plt.yticks(fontsize=12, fontweight='bold')
 
-        plt.text(x=data['begin'][0], y=max(data['mean_cost']), s=f'{tick}', color='#333333', fontsize=15,
-                 fontstyle='oblique', fontvariant='small-caps')
-        plt.legend(loc='lower left', ncols=2)
+        plt.text(x=data['begin'][0], y=max(data['mean_cost'])+max(data['mean_cost'])*0.001,
+                 s=f'{tick}', color='#333333', fontsize=15, fontstyle='oblique', fontvariant='small-caps')
+        plt.legend(loc='lower right', bbox_to_anchor=(1, 1), ncols=5)
 
         img = BytesIO()
         plt.savefig(img, format='png', bbox_inches='tight')
