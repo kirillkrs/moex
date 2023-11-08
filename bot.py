@@ -1,151 +1,77 @@
-import base64
-from concurrent.futures import ThreadPoolExecutor
+import logging
 
 import telebot
 from telebot import types
-import logging
 
 from __init__ import secrets  # Токен
 from main import get_tick
 
-import matplotlib.pyplot as plt
-from io import BytesIO
-
-
 token = secrets.get('BOT_API_TOKEN')
 bot = telebot.TeleBot(token)
 
+logging.basicConfig(level=logging.INFO)  # Настройка уровня логирования
 
-# Функция обработчика команды /start
-# Запуск кнопок при запуске команды /start
+
+# Функция для отправки сообщения с клавиатурой
+def send_keyboard(message, text, keyboard):
+    logging.info(f'Отправка сообщения: {text}')
+    bot.send_message(message.chat.id, text, reply_markup=keyboard)
+
+
+# Функция для обработки команды /start
 @bot.message_handler(commands=['start'])
 def start_message(message):
-    # принт для отображения запуска в консоли для отладки функций
-    print('00 запуск функции обработчика команды /start')
-
+    logging.info('Начало работы, активация команды /start')
     keyboard = types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True)
     button_info = types.KeyboardButton('Инфо')
     button_actions = types.KeyboardButton('Акции')
     keyboard.add(button_info, button_actions)
-
-    # Отправляем приветственное сообщение с клавиатурой пользователю
-    bot.send_message(message.chat.id, 'Привет, {0.first_name}'.format(message.from_user),
-                     reply_markup=keyboard)
-
-    # принт для отображения окончания работы в консоли для отладки функций
-    print('00 окночание функции обработчика команды /start' +
-          '\n' +
-          '=' * 5 +
-          '\n')
+    send_keyboard(message, f'Привет, {message.from_user.first_name}', keyboard)
+    logging.info('Завершение обработки команды /start')
 
 
-# Обработчик кнопки 'ИНФО'
+# Функция для обработки кнопки 'ИНФО'
 @bot.message_handler(func=lambda message: message.text == 'Инфо')
 def handle_info(message):
-    # принт для отображения запуска в консоли для отладки функций
-    print('01 Запуск обработчика кнопки ИНФО')
-
-    # Логика обработки нажатия кнопки 'Инфо'
-    bot.send_message(message.chat.id,
-                     text='Я помогу тебе получить данные по стоимости акций с московской биржи ' +
-                          'и отобразить в виде графика')
-
-    # принт для отображения окончания работы в консоли для отладки функций
-    print('01 Окончание работы обработчика кнопки ИНФО' +
-          '\n' +
-          '=' * 5 +
-          '\n')
+    logging.info('Обработка кнопки Инфо')
+    send_keyboard(message,
+                  'Я помогу тебе получить данные по стоимости акций с московской биржи и отобразить в виде графика',
+                  None)
+    logging.info('Завршение обработки кнопки Инфо')
 
 
-# Обработчик кнопки 'Акции'
+# Функция для обработки кнопки 'Акции'
 @bot.message_handler(func=lambda message: message.text == 'Акции')
 def handle_actions(message):
-    # принт для отображения запуска в консоли для отладки функций
-    print('02 Запуск обработчика кнопки Акции')
-
-    # Логика обработки нажатия кнопки 'Акции'
-    bot.send_message(message.chat.id, text='Какая акция интересует?\n' +
-                                           'Пример команды:\n' +
-                                           'MOEX 4 недели\n' +
-                                           '\n' +
-                                           'Все значения через пробелы')
-
-    # принт для отображения окончания работы в консоли для отладки функций
-    print('02 Окончание работы обработчика кнопки Акции' +
-          '\n' +
-          '=' * 5 +
-          '\n')
+    logging.info('Handling Акции button')
+    send_keyboard(message, 'Какая акция интересует?\nПример команды:\nMOEX 4 недели\n\nВсе значения через пробелы',
+                  None)
+    logging.info('Завршение обработки кнопки Акции')
 
 
+# Функция для обработки текста от пользователя
 @bot.message_handler(func=lambda message: True)
 def handle_get_tick(message):
-    # принт для отображения запуска в консоли для отладки функций
-    print('03 Запуск обработчика текста от пользователя')
-
+    logging.info('Инициализация обработки текстового сообщения')
     try:
-        # принт для отображения запуска в консоли для отладки функций
-        print('03_01 Запуск try внутри функции обработчика текста' +
-              '\n' +
-              '-' * 5 +
-              '\n')
-
+        logging.info('Обработка сообщения пользователя')
         chat_id = message.chat.id
-
         text_info = message.text.split()
-        tick, interval, interval_name = text_info[0], text_info[1], text_info[2]
-        tick = str(tick.upper())
-        interval = int(interval)
-        interval_name = str(interval_name.lower())
+        tick, interval, interval_name = str(text_info[0]).upper(), int(text_info[1]), str(text_info[2]).lower()
 
-        # принт после разделения запроса пользователя
-        print(
-            f'03_02 Разделение запроса пользователя на тик {tick}, интервал {interval} и название интервала {interval_name}' +
-            '\n' +
-            '-' * 5 +
-            '\n')
-
-        # принт запуска функции построения графика
-        print('03_03 Запуск функции обработки запроса пользователя и доступ к moex' +
-              '\n' +
-              '-' * 5 +
-              '\n')
-
-        # get_tick(tick=tick, interval_name=interval_name, interval=interval)
+        logging.info(f'Запрос пользователя: тикер={tick}, интервал={interval}, дни/недели={interval_name}')
         img = get_tick(tick=tick, interval_name=interval_name, interval=interval)
 
-        # принт после запуска фунции получения данных с биржи + построение графика
-        print(f'03_04 Функция get_tick отработала с параметрами {tick, interval, interval_name}' +
-              '\n' +
-              '-' * 5 +
-              '\n')
-
-        # сохранение изображения в байтовый поток
-        # img = BytesIO()
-        # plt.savefig(img, format='png', bbox_inches='tight')
+        logging.info('Отправка сообщения пошльзователю')
         img.seek(0)
-        # img_png = img.getvalue()
-
-        # graphic = base64.b64encode(img_png)
-        # graphic = graphic.decode('utf-8')
-
-        # отправка результата функции пользователю
         bot.send_photo(chat_id, img)
-        # bot.send_photo(chat_id, graphic)
-
         img.close()
 
-        # принт окончания выполнения обработчиика сообщения пользователя
-        print(f'03 Функция get_tick завершила работу с параметрами {tick, interval, interval_name}' +
-              '\n' +
-              '=' * 5 +
-              '\n')
-
+        logging.info(f'Завершение запроса пользователя: тикер={tick}, интервал={interval}, дни/недели={interval_name}')
+        logging.info('Запрос успешно обработан')
     except Exception as e:
-        # ошибка обработчика функции get_tick
-        print(f'03 Ошибка обработчика функции get_tick {e}' +
-              '\n' +
-              '=' * 5 +
-              '\n')
+        logging.error(f'Ошибка обработки запроса: {e}')
 
 
-bot.polling(none_stop=True)
+if __name__ == "__main__":
+    bot.polling(none_stop=True)
