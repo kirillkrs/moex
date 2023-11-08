@@ -38,12 +38,13 @@ def get_tick(
         date_start_frame = date_start_frame.strftime('%Y-%m-%d')
         date_format = mdates.DateFormatter('%d.%m.%Y')
 
-        j = requests.get(
+        ticket = requests.get(
             f'http://iss.moex.com/iss/engines/stock/markets/shares/securities/{tick}/candles.json?from={date_start_frame}&till={date_end}&interval=60')
-        j_dict = j.json()
+        ticket_dict = ticket.json()
 
         data = pd.DataFrame(
-            [{k: r[i] for i, k in enumerate(j_dict['candles']['columns'])} for r in j_dict['candles']['data']])
+            [{k: r[i] for i, k in enumerate(ticket_dict['candles']['columns'])} for r in
+             ticket_dict['candles']['data']])
 
         data['begin'] = pd.to_datetime(data['begin'])  # Convert 'begin' column to datetime format
         data['mean_cost'] = data[['high', 'low']].mean(axis=1)
@@ -70,8 +71,15 @@ def get_tick(
         plt.ylabel(ylabel='', fontweight='bold')
         plt.yticks(fontsize=12, fontweight='bold')
 
-        plt.text(x=data['begin'][0], y=max(data['mean_cost'])+max(data['mean_cost'])*0.001,
-                 s=f'{tick}', color='#333333', fontsize=15, fontstyle='oblique', fontvariant='small-caps')
+        # Получить полное название (ну почти полное) для тикета {tick}
+        name = requests.get(f'http://iss.moex.com/iss/engines/stock/markets/shares/securities/{tick}/SHORTNAME.json')
+        name_dict = name.json()
+        name_data = pd.DataFrame([{k: r[i] for i, k in enumerate(name_dict['securities']['columns'])} for r in
+                                  name_dict['securities']['data']])
+
+        plt.text(x=data['begin'][0], y=max(data['mean_cost']) + max(data['mean_cost']) * 0.001,
+                 s=f'{name_data.iloc[0, 2]}', color='#333333', fontsize=15, fontstyle='oblique',
+                 fontvariant='small-caps')
         plt.legend(loc='lower right', bbox_to_anchor=(1, 1), ncols=5)
 
         img = BytesIO()
