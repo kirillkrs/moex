@@ -42,14 +42,6 @@ def get_tick(
             f'http://iss.moex.com/iss/engines/stock/markets/shares/securities/{tick.upper()}/candles.json?from={date_start_frame}&till={date_end}&interval={time_interval}')
         j_dict = j.json()
 
-        # if 'candles' in j_dict and 'columns' in j_dict['candles']:
-        #     data = pd.DataFrame(
-        #         [{k: r[i] for i, k in enumerate(j_dict['candles']['columns'])} for r in j_dict['candles']['data']])
-        # else:
-        #     error_message = f"Неожиданный API запрос для {tick.upper()}"
-        #
-        #     raise ValueError(error_message)
-
         data = pd.DataFrame(
             [{k: r[i] for i, k in enumerate(j_dict['candles']['columns'])} for r in j_dict['candles']['data']])
 
@@ -57,12 +49,20 @@ def get_tick(
         data['mean_cost'] = data[['high', 'low']].mean(axis=1)
         data['sd_cost'] = data[['high', 'low']].std(axis=1)
 
+        data['SMA7'] = data['mean_cost'].rolling(window=7).mean()
+        data['SMA21'] = data['mean_cost'].rolling(window=21).mean()
+
         plt.figure(figsize=(15, 5))
 
         ax = sns.lineplot(data=data, x='begin', y='mean_cost', color='#0066FF', alpha=0.7, lw=2.5, label='Mean')
         ax.fill_between(data['begin'], data['mean_cost'] - data['sd_cost'], data['mean_cost'] + data['sd_cost'],
                         color='#99CCFF', alpha=0.5, label='Mean ± SD')
         sns.scatterplot(data=data, x='begin', y='close', s=45, color='#6699FF', alpha=0.7, label='Close')
+
+        sns.lineplot(data=data, x='begin', y=f'SMA7', color='#FF6600', label=f'SMA 7 дней', alpha=0.65,
+                     lw=2)
+        sns.lineplot(data=data, x='begin', y=f'SMA21', color='#CC0033', label=f'SMA 21 день', alpha=0.65,
+                     lw=2)
 
         ax.xaxis.set_major_formatter(date_format)
         ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
