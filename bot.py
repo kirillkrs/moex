@@ -3,7 +3,7 @@ import logging
 import telebot
 from telebot import types
 
-from __init__ import secrets  # Токен
+from secrets import secrets  # Токен
 from main import get_tick
 
 token = secrets.get('BOT_API_TOKEN')
